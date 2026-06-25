@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voucher Cadou — Novaskin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f7f3ef;
+      font-family: 'Georgia', serif;
+    }
+
+    .scene {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .brand {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #b89c7a;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      cursor: pointer;
+      width: 320px;
+    }
+
+    .envelope-body {
+      width: 320px;
+      height: 220px;
+      position: relative;
+    }
+
+    .env-back {
+      position: absolute; top: 0; left: 0;
+      width: 320px; height: 220px;
+      background: #d4b896;
+      border-radius: 4px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+
+    .env-left {
+      position: absolute; top: 0; left: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 110px 0 110px 160px;
+      border-color: transparent transparent transparent #c9a87c;
+    }
+
+    .env-right {
+      position: absolute; top: 0; right: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 110px 160px 110px 0;
+      border-color: transparent #bf9e72 transparent transparent;
+    }
+
+    .env-bottom {
+      position: absolute; bottom: 0; left: 0;
+      width: 320px; height: 130px;
+      background: #c9a87c;
+      clip-path: polygon(0 100%, 100% 100%, 50% 0%);
+    }
+
+    /* Capacul — dispare complet (opacity + display none dupa tranzitie) */
+    .env-flap {
+      position: absolute; top: 0; left: 0;
+      width: 320px; height: 130px;
+      background: #d9be9e;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      z-index: 20;
+      border-radius: 4px 4px 0 0;
+      transition: opacity 0.3s ease 0.1s;
+    }
+
+    .env-seal {
+      position: absolute; top: 90px; left: 50%;
+      transform: translateX(-50%);
+      width: 40px; height: 40px;
+      background: #8b5e3c;
+      border-radius: 50%;
+      z-index: 21;
+      display: flex; align-items: center; justify-content: center;
+      color: #f7f3ef; font-size: 16px; font-family: serif;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: opacity 0.2s ease;
+    }
+
+    /* Scrisoarea — ascunsa initial in plic */
+    .letter {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      background: #faf8f5;
+      border-radius: 2px;
+      padding: 2rem 1.5rem 1.5rem;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+      text-align: center;
+      z-index: 10; /* sub capac initial */
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        bottom 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) 0.2s,
+        opacity 0.4s ease 0.25s;
+    }
+
+    /* === OPENED === */
+    .envelope-wrap.opened .env-flap {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .envelope-wrap.opened .env-seal {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .envelope-wrap.opened .letter {
+      bottom: 230px;
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 30;
+    }
+    .envelope-wrap.opened .hint { display: none; }
+
+    .hint {
+      margin-top: 1.2rem;
+      font-size: 11px; letter-spacing: 2px; color: #b89c7a;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue', sans-serif;
+      text-align: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .letter-ornament { font-size: 22px; color: #c9a87c; margin-bottom: 0.75rem; display: block; }
+    .letter-title { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: #8b5e3c; font-family: 'Helvetica Neue', sans-serif; margin-bottom: 0.5rem; }
+    .letter-headline { font-size: 17px; color: #3d2b1a; font-weight: bold; margin-bottom: 0.75rem; line-height: 1.3; }
+
+    .voucher-box {
+      background: #f0e8de;
+      border: 1.5px dashed #c9a87c;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 0.75rem 0;
+    }
+
+    .voucher-amount { font-size: 28px; font-weight: bold; color: #8b5e3c; letter-spacing: 1px; }
+    .voucher-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #b89c7a; font-family: 'Helvetica Neue', sans-serif; margin-top: 2px; }
+
+    .voucher-code-row {
+      margin-top: 0.75rem;
+      background: #fff;
+      border: 1px solid #d4b896;
+      border-radius: 4px;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #3d2b1a;
+      letter-spacing: 3px;
+      font-weight: bold;
+    }
+
+    .letter-footer {
+      font-size: 10px; color: #b89c7a; letter-spacing: 1px;
+      font-family: 'Helvetica Neue', sans-serif;
+      margin-top: 0.75rem; line-height: 1.5;
+    }
+
+    .btn-shop {
+      display: inline-block;
+      margin-top: 0.85rem;
+      background: #8b5e3c;
+      color: #faf8f5;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue', sans-serif;
+      padding: 0.6rem 1.5rem;
+      border-radius: 2px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-shop:hover { background: #6d4a2f; }
+  </style>
+</head>
+<body>
+<div class="scene">
+  <div class="brand">Novaskin</div>
+
+  <div class="envelope-wrap" id="env" onclick="openEnvelope()">
+    <div class="envelope-body">
+      <div class="env-back"></div>
+      <div class="env-left"></div>
+      <div class="env-right"></div>
+      <div class="env-bottom"></div>
+
+      <!-- Scrisoarea e INAUNTRUL envelope-body, iese in sus -->
+      <div class="letter">
+        <span class="letter-ornament">✦</span>
+        <div class="letter-title">Un cadou special pentru tine</div>
+        <div class="letter-headline">Ai primit un voucher cadou!</div>
+        <div class="voucher-box">
+
+          <!-- ✏️ SCHIMBĂ SUMA AICI -->
+          <div class="voucher-amount">500 lei</div>
+
+          <div class="voucher-label">valoare voucher</div>
+
+          <!-- ✏️ SCHIMBĂ CODUL AICI -->
+          <div class="voucher-code-row">DIANUSKA</div>
+
+        </div>
+        <div class="letter-footer">
+          Folosește codul la checkout pe<br>
+          <strong style="color:#8b5e3c;">novaskin.md</strong>
+        </div>
+        <a class="btn-shop" href="https://novaskin.md" target="_blank" onclick="event.stopPropagation()">Cumpără acum →</a>
+      </div>
+
+      <div class="env-flap"></div>
+      <div class="env-seal">N</div>
+    </div>
+
+    <div class="hint">Apasă pentru a deschide</div>
+  </div>
+</div>
+
+<script>
+  function openEnvelope() {
+    const env = document.getElementById('env');
+    if (!env.classList.contains('opened')) {
+      env.classList.add('opened');
+    }
+  }
+</script>
+</body>
+</html>
